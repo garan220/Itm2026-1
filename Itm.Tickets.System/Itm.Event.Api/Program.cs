@@ -1,42 +1,33 @@
-var builder = WebApplication.CreateBuilder(args);
+using Itm.Event.Api.Dtos;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-var summaries = new[]
+app.UseHttpsRedirection();
+
+var EventDb = new List<EventItmDto>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    new (1, "Concierto ITM", 50000, 100)
 };
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/api/events/{id}", (int id) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var eventItm = EventDb.FirstOrDefault(p => p.EventId == id);
+
+    return eventItm is not null ? Results.Ok(eventItm) : Results.NotFound();
 })
-.WithName("GetWeatherForecast")
+
+.WithName("GetEvent")
 .WithOpenApi();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
