@@ -24,3 +24,34 @@ if(app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
+
+//app.MapGet("/api/booking/{id}/check-event", async (int id, IHttpClientFactory clientFactory) =>
+//{
+//    var client = clientFactory.CreateClient("EventClient");
+//    try
+//    {
+//        var response = await client.GetAsync($"/api/event/{id}");
+//        if (response.IsSuccessStatusCode)
+//        {
+//            var eventData = await response.Content.ReadFromJsonAsync<EventResponse>();
+//            return Results.Ok(new {ProductId = id, })
+//        }
+//    }
+//})
+
+//paralelismo
+app.MapGet("/api/booking{id}/summary", async (int id, IHttpClientFactory factory) =>
+{
+    var eventClient = factory.CreateClient("EventClient");
+    var discountClient = factory.CreateClient("DiscountClient");
+
+    try
+    {
+        var eventTask = eventClient.GetFromJsonAsync<EventDto>($"/api/events/{request.EventId}");
+    }
+})
+
+
+internal record EventDto(int EventId, string Name, decimal BasePrice, int chairs);

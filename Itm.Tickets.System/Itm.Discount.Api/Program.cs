@@ -25,7 +25,7 @@ var discountDb = new List<DiscountEventDto>
 
 app.MapGet("/api/discount/{code}", (string code) =>
 {
-    var discount = discountDb.FirstOrDefault(p => p.CodeDiscount == code);
+    var discount = discountDb.FirstOrDefault(e => e.CodeDiscount == code);
 
     return discount is not null ? Results.Ok(discount) : Results.NotFound();
 })
