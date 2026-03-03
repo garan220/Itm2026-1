@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
@@ -42,7 +43,7 @@ app.UseHttpsRedirection();
 //})
 
 //paralelismo
-app.MapGet("/api/booking{id}/summary", async (int id, IHttpClientFactory factory) =>
+app.MapPost("/api/bookings", async (BookingRequest request, IHttpClientFactory factory) =>
 {
     var eventClient = factory.CreateClient("EventClient");
     var discountClient = factory.CreateClient("DiscountClient");
@@ -50,8 +51,33 @@ app.MapGet("/api/booking{id}/summary", async (int id, IHttpClientFactory factory
     try
     {
         var eventTask = eventClient.GetFromJsonAsync<EventDto>($"/api/events/{request.EventId}");
+        var discountTask = eventClient.GetFromJsonAsync<DiscountDto>($"/api/discounts/{request.DiscountCode}");
+
+        await Task.WhenAll(eventTask, discountTask);
+
+        var eventData = eventTask.Result;
+        var discountData = discountTask.Result;
+
+        return Results.Ok(new
+        {
+            EventDetails = eventData,
+            DiscountDetails = discountData,
+            CalculatedAt = DateTime.UtcNow
+
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Error en el sistema: {ex.Message}");
     }
 })
 
+.WithName("GetEventSummary")
+.WithOpenApi();
+
+app.Run();
+
 
 internal record EventDto(int EventId, string Name, decimal BasePrice, int chairs);
+internal record DiscountDto(int id, string CodeDiscount, decimal Percent);
+internal record BookingRequest(int EventId, string DiscountCode);
