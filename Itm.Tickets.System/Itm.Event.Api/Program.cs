@@ -30,26 +30,26 @@ app.MapGet("/api/events/{id}", (int id) =>
 .WithName("GetEvent")
 .WithOpenApi();
 
-app.MapPost("/api/events/reduce", (ReserveDto request) =>
+app.MapPost("/api/events/reserve", (ReserveDto request) =>
 {
     var item = eventDb.FirstOrDefault(p => p.EventId == request.EventId);
     if (item is null) return Results.BadRequest("El evento no existe");
-    if (item.chairsAvalaible < request.Quantity) return Results.BadRequest("No hay sillas suficientes");
+    if (item.chairsAvailable < request.Quantity) return Results.BadRequest("No hay sillas suficientes");
 
     var index = eventDb.IndexOf(item);
-    eventDb[index] = item with { chairsAvalaible = item.chairsAvalaible - request.Quantity };
+    eventDb[index] = item with { chairsAvailable = item.chairsAvailable - request.Quantity };
     return Results.Ok(eventDb[index]);
 });
 
-app.MapPost("/api/event/release", (ReserveDto request) =>
+app.MapPost("/api/events/release", (ReserveDto request) =>
 {
     var item = eventDb.FirstOrDefault(p => p.EventId == request.EventId);
     if (item is null) return Results.NotFound();
 
     var index = eventDb.IndexOf(item);
-    eventDb[index] = item with { chairsAvalaible = item.chairsAvalaible + request.Quantity };
-    Console.WriteLine($"[COMPENSACION] se devolvieron {request.Quantity} sillas del evento {item.EventId}. Nuevo Numero de sillas {eventDb[index].chairsAvalaible}");
-    return Results.Ok(new { Message = "Sillas liberadas por error en la transaccion", currentChairs = eventDb[index].chairsAvalaible });
+    eventDb[index] = item with { chairsAvailable = item.chairsAvailable + request.Quantity };
+    Console.WriteLine($"[COMPENSACION] se devolvieron {request.Quantity} sillas del evento {item.EventId}. Nuevo Numero de sillas {eventDb[index].chairsAvailable}");
+    return Results.Ok(new { Message = "Sillas liberadas por error en la transaccion", currentChairs = eventDb[index].chairsAvailable });
 });
 
 app.Run();

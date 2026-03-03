@@ -20,17 +20,17 @@ if (app.Environment.IsDevelopment())
 
 var discountDb = new List<DiscountEventDto>
 {
-    new(1, "ITM50", 0.5m)
+    new("ITM50", 0.5m)
 };
 
 app.MapGet("/api/discount/{code}", (string code) =>
 {
     var discount = discountDb.FirstOrDefault(e => e.CodeDiscount == code);
 
-    return discount is not null ? Results.Ok(discount) : Results.NotFound();
+    return discount is not null ? Results.Ok(discount) : Results.NotFound("Codigo no valido");
 })
 
-.WithName("GetDiscountById")
+.WithName("GetDiscountByCode")
 .WithOpenApi();
 
 app.Run();
